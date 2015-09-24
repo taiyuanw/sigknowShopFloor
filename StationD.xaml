@@ -1,0 +1,6 @@
+﻿<Window x:Class="SigknowShopFloor.StationD"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="電極導通測試" Height="500" Width="600">
+
+</Window>

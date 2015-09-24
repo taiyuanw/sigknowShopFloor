@@ -1,0 +1,6 @@
+﻿<Window x:Class="SigknowShopFloor.StationEassociate"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="建立關連" Height="500" Width="600">
+    
+</Window>
