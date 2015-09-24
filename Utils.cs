@@ -1012,7 +1012,7 @@ public class SerialNumberNotMatchedException: Exception
     }
 
     public SerialNumberNotMatchedException(string pcbasn, string sigknowsn)
-        : base("PCBASN: " + (pcbasn.Length > 0 ? pcbasn:"NotFound, \n") + "SIGKNOWSN: " + (sigknowsn.Length > 0? sigknowsn:"NotFound") )
+        : base("PCBASN: " + (pcbasn.Length > 0 ? pcbasn : "不存在 , \n") + "SIGKNOWSN: " + (sigknowsn.Length > 0 ? sigknowsn : "不存在 "))
     {
     }
 
