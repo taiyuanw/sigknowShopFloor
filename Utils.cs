@@ -15,6 +15,7 @@ namespace SigknowShopFloor
         public static string gResult = "";
         public const string gTableName = "shopfloor";
         public const string gUpdateHistoryTableName = "updatehistory";
+        public const string gBOXPREFIX = "sx";
         public static string gPCBASN = "";
         public static string gSIGKNOWSN = "";
         public static string gOLDSIGKNOWSN = "";
@@ -215,52 +216,14 @@ namespace SigknowShopFloor
             MySQLDB.DBdisconnect();
         }
 
-        public static void ValidateBoxSN(string station, string pcbasn, string boxsn)
+        public static void ValidateBoxSN(string boxsn)
         {
-            var cmd = " select BOXSN, BOXTIME, BOXUSERNAME " +
-                " from " + Global.gTableName +
-                " where PCBASN = '" + pcbasn + "'" +
-                " and ( BOXTIME between " + Global.gTIMEINTERVAL + " || BOXTIME is null) " + 
-                " order by id desc limit 1;";
-            var val = "";
-            MySQLDB.DBconnect();
-            MySqlCommand sqlcmd = MySQLDB.command(cmd);
-            MySqlDataReader reader = sqlcmd.ExecuteReader();
-            if ((reader.HasRows))
+            if (
+                String.Compare(boxsn.Substring(0, Global.gBOXPREFIX.Length).ToUpper(), Global.gBOXPREFIX.ToUpper()) !=
+                0)
             {
-                while (reader.Read())
-                {
-                    if (!reader.IsDBNull(0))
-                    {
-                        val = reader.GetString(0);
-                        if (val.Length > 0)
-                        {
-                            Global.gSKIP = (val == boxsn);
-                            Global.gINITIALRUN = false;
-                        }
-                        else
-                        {
-                            Global.gSKIP = false;
-                            Global.gINITIALRUN = true;
-                        }
-                    }
-                    else
-                    {
-                        Global.gSKIP = false;
-                        Global.gINITIALRUN = true;
-                    }
-                }
-                //MessageBox.Show("boxsn: " + val + "\n\nrework: " + Global.gREWORK + "\nskip: " + Global.gSKIP + "\ninitrun: " + Global.gINITIALRUN);
+                throw new InvalidSerialNumberException();
             }
-            else
-            {
-                //MySQLDB.DBdisconnect();
-                //throw new Exception("序號尚未存在系統.");
-                Global.gINITIALRUN = true;
-                Global.gSKIP = false;
-                Global.gREWORK = false;
-            }
-            MySQLDB.DBdisconnect();
         }
 
 
@@ -490,6 +453,32 @@ namespace SigknowShopFloor
         {
             System.Globalization.CultureInfo LangEng = new System.Globalization.CultureInfo("en-us");
             System.Windows.Input.InputLanguageManager.SetInputLanguage(t, LangEng);
+        }
+
+        public static List<string> GetPatchSNbyBoxSN(string boxsn)
+        {
+            var patchsnlist = new List<string>();
+            var cmd = "select sigknowsn from " + Global.gTableName
+                      + " where boxsn = '" + boxsn + "' order by sigknowsn asc;";
+            MySQLDB.DBconnect();
+            MySqlCommand sqlcmd = MySQLDB.command(cmd);
+            MySqlDataReader reader = sqlcmd.ExecuteReader();
+            if (reader.HasRows)
+            {
+                Global.gREWORK = true;
+                while (reader.Read()) //一次讀一列 (row)
+                {
+                    if (reader.IsDBNull(0))
+                    {
+                        MySQLDB.DBdisconnect();
+                        throw new InvalidSerialNumberException();
+                    }
+
+                    patchsnlist.Add(reader.GetString(0));
+                }
+            }
+            MySQLDB.DBdisconnect();
+            return patchsnlist;
         }
     }
 

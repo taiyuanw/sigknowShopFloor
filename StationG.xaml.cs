@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -23,6 +25,16 @@ namespace SigknowShopFloor
         Label lbBOXSN = new Label();
         TextBox tbBOXSN = new TextBox();
         StackPanel spMainBody = new StackPanel();
+        private List<string> lstPATCHSN = new List<string>();
+
+        private Label lbBoxContent = new Label();
+        private StackPanel spPatchMatrix = new StackPanel();
+        private StackPanel spCol0 = new StackPanel();
+        private StackPanel spCol1 = new StackPanel();
+        private StackPanel spCol2 = new StackPanel();
+        private StackPanel spCol3 = new StackPanel();
+        private StackPanel spCol4 = new StackPanel();
+        private StackPanel spCol5 = new StackPanel();
 
         private MainWindow mainwindow;
         public StationG()
@@ -64,12 +76,14 @@ namespace SigknowShopFloor
             //Border bSIGKNOWSN = new Border();
             bSIGKNOWSN.Width = 200;
             bSIGKNOWSN.Height = 30;
+            bSIGKNOWSN.HorizontalAlignment = HorizontalAlignment.Left;
             bSIGKNOWSN.BorderBrush = System.Windows.Media.Brushes.Black;
             bSIGKNOWSN.BorderThickness = new Thickness(4);
 
             //TextBox tbSIGKNOWSN = new TextBox();
             tbSIGKNOWSN.Height = 30;
             tbSIGKNOWSN.Width = 200;
+            tbSIGKNOWSN.HorizontalAlignment = HorizontalAlignment.Right;
             tbSIGKNOWSN.Text = Global.gEMPTY;
             tbSIGKNOWSN.Background = System.Windows.Media.Brushes.LightGray;
             tbSIGKNOWSN.KeyDown += tbSIGKNOWSN_KeyDown;
@@ -82,6 +96,7 @@ namespace SigknowShopFloor
             //Border bRESULT = new Border();
             bBOXSN.Width = 200;
             bBOXSN.Height = 30;
+            bBOXSN.HorizontalAlignment = HorizontalAlignment.Left;
             bBOXSN.BorderBrush = System.Windows.Media.Brushes.Black;
             bBOXSN.BorderThickness = new Thickness(4);
 
@@ -89,23 +104,64 @@ namespace SigknowShopFloor
             tbBOXSN.Height = 30;
             tbBOXSN.Width = 200;
             tbBOXSN.Text = Global.gEMPTY;
+            tbBOXSN.HorizontalAlignment = HorizontalAlignment.Right;
             tbBOXSN.Background = System.Windows.Media.Brushes.LightGray;
             tbBOXSN.KeyDown += tbBOXSN_KeyDown;
             bBOXSN.Child = tbBOXSN;
 
+            // patch matrix
+
+            int col = 0;
+            int row = 0;
+            for (col = 0; col < 6; col ++)
+            {
+                for (row = 0; row < 10; row ++)
+                {
+                    
+                }
+            }
+
+            lbBoxContent.Height = 50;
+            lbBoxContent.Width = 300;
+            lbBoxContent.Content = "內容物: ";
+            spPatchMatrix.Orientation = Orientation.Horizontal;
+            spPatchMatrix.HorizontalAlignment = HorizontalAlignment.Right;
+            spCol0.Width = 150;
+            spCol0.Height = 500;
+            spCol1.Width = 150;
+            spCol1.Height = 500;
+            spCol2.Width = 150;
+            spCol2.Height = 500;
+            spCol3.Width = 150;
+            spCol3.Height = 500;
+            spCol4.Width = 150;
+            spCol4.Height = 500;
+            spCol5.Width = 150;
+            spCol5.Height = 500;
+            spPatchMatrix.Children.Add(spCol0);
+            spPatchMatrix.Children.Add(spCol1);
+            spPatchMatrix.Children.Add(spCol2);
+            spPatchMatrix.Children.Add(spCol3);
+            spPatchMatrix.Children.Add(spCol4);
+            spPatchMatrix.Children.Add(spCol5);
+            
             //StackPanel spMainBody = new StackPanel();
             spMainBody.HorizontalAlignment = HorizontalAlignment.Center;
             spMainBody.Children.Add(lbStation);
             spMainBody.Children.Add(spUser);
-            spMainBody.Children.Add(lbSIGKNOWSN);
-            spMainBody.Children.Add(bSIGKNOWSN);
             spMainBody.Children.Add(lbBOXSN);
             spMainBody.Children.Add(bBOXSN);
+            spMainBody.Children.Add(lbSIGKNOWSN);
+            spMainBody.Children.Add(bSIGKNOWSN);
+            spMainBody.Children.Add(lbBoxContent);
+            spMainBody.Children.Add(spPatchMatrix);
             Utils.changeTextboxLang2Eng(tbSIGKNOWSN);
 
+
+            
             Content = spMainBody;
-            tbSIGKNOWSN.Focus();
-            tbSIGKNOWSN.SelectAll();
+            tbBOXSN.Focus();
+            tbBOXSN.SelectAll();
 
         }
 
@@ -171,6 +227,41 @@ namespace SigknowShopFloor
 
         }
 
+        private void ShowBoxContent()
+        {
+            lstPATCHSN = Utils.GetPatchSNbyBoxSN(tbBOXSN.Text);
+            spCol0.Children.Clear();
+            spCol1.Children.Clear();
+            spCol2.Children.Clear();
+            spCol3.Children.Clear();
+            spCol4.Children.Clear();
+            spCol5.Children.Clear();
+
+            for (var i = 0; i < lstPATCHSN.Count; i++)
+            {
+                Label lb = new Label();
+                lb.Height = 30;
+                lb.Width = 150;
+                lb.Content = lstPATCHSN.ElementAt(i);
+                Button x = new Button();
+                x.Height = 30;
+                x.Width = 150;
+                x.Content = lstPATCHSN.ElementAt(i);
+
+                if (i < 10)
+                    spCol0.Children.Add(x);
+                else if ((i >= 10) && (i < 20))
+                    spCol1.Children.Add(x);
+                else if ((i >= 20) && (i < 30))
+                    spCol2.Children.Add(x);
+                else if ((i >= 30) && (i < 40))
+                    spCol3.Children.Add(x);
+                else if ((i >= 40) && (i < 50))
+                    spCol4.Children.Add(x);
+                else if (i >= 50)
+                    spCol5.Children.Add(x);
+            }
+        }
         private void tbBOXSN_KeyDown(object sender, KeyEventArgs e)
         {
             var textBox = sender as TextBox;
@@ -178,38 +269,12 @@ namespace SigknowShopFloor
             textBox.Background = System.Windows.Media.Brushes.White;
             if (e.Key.ToString() == "Return")
             {
+                tbBOXSN.Text = textBox.Text;
                 try
-                {
-                    if (String.Compare(textBox.Text, "") == 0) return;
+                { 
+                    Utils.ValidateBoxSN(textBox.Text);
 
-                    Global.gBOXSN = String.Copy(textBox.Text);
-
-
-                    tbSIGKNOWSN.Background = System.Windows.Media.Brushes.LightGray;
-                    Utils.ValidateBoxSN(DBColPrefix.gStationG, Global.gPCBASN, Global.gBOXSN);
-
-
-
-                    textBox.Background = System.Windows.Media.Brushes.Yellow;
-
-
-                    if (Global.gREWORK)
-                    {
-                        if (!Global.gSKIP)
-                        {
-                            Boxing.dbupdate(Global.gPCBASN, Global.gBOXSN);
-                            if (!Global.gINITIALRUN)
-                                Boxing.dbchangehistory(
-                                    Global.gPCBASN,
-                                    Global.gSIGKNOWSN,
-                                    DBColPrefix.gStationG,
-                                    Global.gBOXSN);
-                        }
-                    }
-                    else
-                    {
-                        throw new Exception("未按照標準程序 : 查無前一站資料.");
-                    }
+                    this.ShowBoxContent();
 
                 }
                 catch (ResultUnchangedException rx)
@@ -222,15 +287,19 @@ namespace SigknowShopFloor
                     tbBOXSN.Focus();
                     tbBOXSN.Clear();
                 }
+                catch (InvalidSerialNumberException ise)
+                {
+                    MessageBox.Show("無效的序號");
+                    tbBOXSN.Focus();
+                    tbBOXSN.Clear();
+                }
+
                 catch (Exception ex)
                 {
                     tbBOXSN.Focus();
                     tbBOXSN.Clear();
                     MessageBox.Show(ex.ToString());
                 }
-                tbSIGKNOWSN.Clear();
-                tbBOXSN.Clear();
-                tbSIGKNOWSN.Focus();
             }
         }
     }
