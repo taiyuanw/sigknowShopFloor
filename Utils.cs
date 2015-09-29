@@ -23,11 +23,11 @@ namespace SigknowShopFloor
         public static string gSNAction = ""; // action code for SN association : associate / disassociate / query
         public const string OK = "OK";
         public const string NG = "NG";
+        public const int gMaxRecycleCount = 20;
         public static bool gREWORK;  // flag : indicate second (or more) run on the pcba board in the same station
         public static bool gSKIP;    // flag : indicate if REWORK can be skipped (test result is identical to db)
         public static bool gINITIALRUN; // flag : indicate the testresult is input for the first time
-        public const int gMaxRecycleCount = 20;
-        public const string gTIMEINTERVAL = " date_sub(curdate(), interval 20 day) and now() ";  // MySQL : 20 day interval
+        public const string gBOXTIMEINTERVAL = " BOXTIME >= date_sub(now(),interval 20 day) ";  // MySQL : 20 day interval
     }
 
     public class Barcode
@@ -150,7 +150,7 @@ namespace SigknowShopFloor
                 {
                     if (!Utils.SNPrecheck(pcbasn, cols[i], ref resultlist))
                     {
-                        throw new Exception("序號不符生產規定.");
+                        throw new PreviousErrorException("前一站檢驗未通過.");
                     }
                 }
             }
@@ -282,18 +282,18 @@ namespace SigknowShopFloor
                 {
                     cmd = "select aresult from " + Global.gTableName + 
                           " where pcbasn = '" + pcbasn + "' " +
-                          " and ( BOXTIME between " + Global.gTIMEINTERVAL + " || BOXTIME is null) " + 
+                          " and ( " + Global.gBOXTIMEINTERVAL + " || BOXTIME is null) " + 
                           " order by id desc limit 1;";  
                 }
                 else if (Global.gStation == StationName.gStationB)
                 {
                     cmd = "select aresult, bresult from " + Global.gTableName + 
                           " where pcbasn = '" + pcbasn + "' " +
-                          " and ( BOXTIME between " + Global.gTIMEINTERVAL + " || BOXTIME is null) " +
+                          " and ( " + Global.gBOXTIMEINTERVAL + " || BOXTIME is null) " +
                           " order by id desc limit 1;";
 
                 }
-                else // Station C,D,F
+                else // Station C,F,G
                 {
                     collist += colname + DBColPostfix.gColname + ", "
                         + colname + DBColPostfix.gTime + ", "
@@ -301,7 +301,7 @@ namespace SigknowShopFloor
                     cmd = "select " + collist + 
                         " from " + Global.gTableName + 
                         " where pcbasn = '" + pcbasn + "'" +
-                        " and ( BOXTIME between " + Global.gTIMEINTERVAL + " || BOXTIME is null) " + 
+                        " and ( " + Global.gBOXTIMEINTERVAL + " || BOXTIME is null) " + 
                         " order by id desc limit 1;";
                 }
 
@@ -586,7 +586,7 @@ namespace SigknowShopFloor
         public static void ValidatePCBASN(string pcbasn)
         {
             // check SN format  OK
-            if (!pcbasn.Substring(0, 1).ToUpper().Contains("B")) throw new Exception("PCBA序號規格不符合.");
+            if (!pcbasn.Substring(0, 1).ToUpper().Contains("B")) throw new InvalidSerialNumberException("PCBA序號規格不符合.");
 
             // check if station B,C,D has been completed.
             //Utils.ValidateSN(pcbasn, DBColPrefix.gStationB, DBColPrefix.gStationC, DBColPrefix.gStationD);
@@ -594,7 +594,7 @@ namespace SigknowShopFloor
 
             // skip SIGKNOWSN NULL check, incase user input the same SIGKNOWSN multiple times and cause false negative.
             var cmd = " select sigknowsn " + " from " + Global.gTableName + " where pcbasn = '" + pcbasn + "'"
-                      + " and ( BOXTIME between " + Global.gTIMEINTERVAL + " || BOXTIME is null)  " + " order by id desc limit 1;";
+                      + " and ( " + Global.gBOXTIMEINTERVAL + " || BOXTIME is null)  " + " order by id desc limit 1;";
 
             MySQLDB.DBconnect();
             MySqlCommand sqlcmd = MySQLDB.command(cmd);
@@ -632,7 +632,7 @@ namespace SigknowShopFloor
             var cmd = " select sigknowsn " +
                       " from " + Global.gTableName +
                       " where pcbasn = '" + pcbasn + "'" +
-                      " and ( BOXTIME between " + Global.gTIMEINTERVAL + " || BOXTIME is null)  " +
+                      " and ( " + Global.gBOXTIMEINTERVAL + " || BOXTIME is null)  " +
                       " order by id desc limit 1;";
 
             MySQLDB.DBconnect();
@@ -699,7 +699,7 @@ namespace SigknowShopFloor
         {
             var cmd = " select sigknowsn " + " from " + Global.gTableName +
                 " where pcbasn = '" + pcbasn + "' " +
-                " and ( BOXTIME between " + Global.gTIMEINTERVAL + " || BOXTIME is null) " +
+                " and ( " + Global.gBOXTIMEINTERVAL + " || BOXTIME is null) " +
                 " order by id desc limit 1;";
             var sigknowsn = "";
 
@@ -732,7 +732,7 @@ namespace SigknowShopFloor
             var cmd = " select sigknowsn " + " from " + Global.gTableName + 
                 " where pcbasn = '" + pcbasn + "' " + 
                 //" and sigknowsn = '" + sigknowsn + "' " +
-                " and ( BOXTIME between " + Global.gTIMEINTERVAL + " || BOXTIME is null) " + 
+                " and ( " + Global.gBOXTIMEINTERVAL + " || BOXTIME is null) " + 
                 " order by id desc limit 1;";
 
             MySQLDB.DBconnect();
@@ -831,7 +831,7 @@ namespace SigknowShopFloor
         {
             var pcbasn = "";
             var cmd = " select pcbasn " + " from " + Global.gTableName + " where sigknowsn = '" + sigknowsn + "'"
-                      + " and ( BOXTIME between " + Global.gTIMEINTERVAL + " || BOXTIME is null) " + " order by id desc limit 1;";
+                      + " and ( " + Global.gBOXTIMEINTERVAL + " || BOXTIME is null) " + " order by id desc limit 1;";
 
             MySQLDB.DBconnect();
             MySqlCommand sqlcmd = MySQLDB.command(cmd);
@@ -887,7 +887,7 @@ namespace SigknowShopFloor
                 " BOXTIME = " + "'" + Utils.CurrentTime() + "', " +
                 " BOXUSERNAME = " + "'" + Global.gUsername + "' " +
                 " where PCBASN = '" + pcbasn + "' " +
-                " and ( BOXTIME between " + Global.gTIMEINTERVAL + " || BOXTIME is null) " +  
+                " and ( " + Global.gBOXTIMEINTERVAL + " || BOXTIME is null) " +
                 " order by id desc limit 1; ";
             try
             {
@@ -895,7 +895,7 @@ namespace SigknowShopFloor
             }
             catch (Exception ex)
             {
-                MessageBox.Show("PCBA '" + pcbasn + "' 裝箱資料修改失敗");
+                MessageBox.Show("裝箱資料修改失敗");
                 MessageBox.Show(ex.ToString());
                 Utils.ErrorBeep();
                 throw;

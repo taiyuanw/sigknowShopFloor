@@ -188,38 +188,39 @@ namespace SigknowShopFloor
                     Global.gPCBASN = SNAssociate.GetPCBASN(Global.gSIGKNOWSN);
                     //Utils.ValidateSN(Global.gPCBASN, DBColPrefix.gStationB, DBColPrefix.gStationC, DBColPrefix.gStationD, DBColPrefix.gStationF);
                     Utils.ValidateSN(Global.gPCBASN, DBColPrefix.gStationB, DBColPrefix.gStationC, DBColPrefix.gStationF);
-                    tbBOXSN.Focus();
-                    tbBOXSN.Clear();
+                    Boxing.dbupdate(Global.gPCBASN, Global.gBOXSN);
+                    this.ShowBoxContent();
+                    Utils.OKBeep();
+                    tbSIGKNOWSN.Clear();
+                    tbSIGKNOWSN.Focus();
                 }
                 catch (InvalidSerialNumberException isne)
                 {
-                    tbSIGKNOWSN.Clear();
-                    tbBOXSN.Clear();
                     Utils.ErrorBeep();
-                    MessageBox.Show("上蓋序號 '" + Global.gSIGKNOWSN + "' 格式不符合規定.");
+                    MessageBox.Show("序號 '" + Global.gSIGKNOWSN + "' 格式不符合規定.");
+                    tbSIGKNOWSN.Clear();
+                    tbSIGKNOWSN.Focus();
                 }
                 catch (PreviousErrorException pe)
                 {
-                    tbSIGKNOWSN.Clear();
-                    tbBOXSN.Clear();
                     Utils.ErrorBeep();
-                    MessageBox.Show("前一站測試未通過.");
+                    MessageBox.Show("序號 '"+ tbSIGKNOWSN.Text + "' 前一站測試未通過.");
+                    tbSIGKNOWSN.Clear();
+                    tbSIGKNOWSN.Focus();
                 }
                 catch (SerialNumberNotMatchedException snnm)
                 {
-                    tbSIGKNOWSN.Clear();
-                    tbBOXSN.Clear();
                     Utils.ErrorBeep();
                     MessageBox.Show("上蓋序號'" + Global.gSIGKNOWSN + "' 查無 PCBA 關聯.");
-
+                    tbSIGKNOWSN.Clear();
+                    tbSIGKNOWSN.Focus();
                 }
                 catch (Exception ex)
                 {
-                    tbSIGKNOWSN.Clear();
-                    tbBOXSN.Clear();
-                    MessageBox.Show("SIGKNOWSN 輸入發生錯誤");
-                    MessageBox.Show(ex.ToString());
                     Utils.ErrorBeep();
+                    MessageBox.Show("SIGKNOWSN 輸入時發生錯誤");
+                    MessageBox.Show(ex.ToString());
+                    tbSIGKNOWSN.Clear();
                     tbSIGKNOWSN.Focus();
                 }
 
@@ -229,6 +230,7 @@ namespace SigknowShopFloor
 
         private void ShowBoxContent()
         {
+            //spPatchMatrix.Children.Clear(); 
             lstPATCHSN = Utils.GetPatchSNbyBoxSN(tbBOXSN.Text);
             spCol0.Children.Clear();
             spCol1.Children.Clear();
@@ -261,6 +263,7 @@ namespace SigknowShopFloor
                 else if (i >= 50)
                     spCol5.Children.Add(x);
             }
+
         }
         private void tbBOXSN_KeyDown(object sender, KeyEventArgs e)
         {
@@ -273,9 +276,9 @@ namespace SigknowShopFloor
                 try
                 { 
                     Utils.ValidateBoxSN(textBox.Text);
-
                     this.ShowBoxContent();
-
+                    tbSIGKNOWSN.Clear();
+                    tbSIGKNOWSN.Focus();
                 }
                 catch (ResultUnchangedException rx)
                 {
