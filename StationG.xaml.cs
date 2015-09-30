@@ -157,8 +157,6 @@ namespace SigknowShopFloor
             spMainBody.Children.Add(spPatchMatrix);
             Utils.changeTextboxLang2Eng(tbSIGKNOWSN);
 
-
-            
             Content = spMainBody;
             tbBOXSN.Focus();
             tbBOXSN.SelectAll();
@@ -186,7 +184,6 @@ namespace SigknowShopFloor
                 {
                     tbBOXSN.Background = System.Windows.Media.Brushes.LightGray;
                     Global.gPCBASN = SNAssociate.GetPCBASN(Global.gSIGKNOWSN);
-                    //Utils.ValidateSN(Global.gPCBASN, DBColPrefix.gStationB, DBColPrefix.gStationC, DBColPrefix.gStationD, DBColPrefix.gStationF);
                     Utils.ValidateSN(Global.gPCBASN, DBColPrefix.gStationB, DBColPrefix.gStationC, DBColPrefix.gStationF);
                     Boxing.dbupdate(Global.gPCBASN, Global.gBOXSN);
                     this.ShowBoxContent();
@@ -276,6 +273,7 @@ namespace SigknowShopFloor
                 try
                 { 
                     Utils.ValidateBoxSN(textBox.Text);
+                    Global.gBOXSN = textBox.Text;
                     this.ShowBoxContent();
                     tbSIGKNOWSN.Clear();
                     tbSIGKNOWSN.Focus();
