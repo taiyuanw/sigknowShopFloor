@@ -530,6 +530,37 @@ namespace SigknowShopFloor
             MySQLDB.DBdisconnect();
             return patchsnlist;
         }
+
+        public static void RemovePatchFromBox(string boxsn, string sigknowsn)
+        {
+            var cmd = "update " + Global.gTableName
+                      + " set BOXSN = null, BOXTIME = null, BOXUSERNAME = null "
+                      + " where SIGKNOWSN = '" + sigknowsn + "' "
+                      + " and " + Global.gBOXTIMEINTERVAL + " order by id desc limit 1";
+            try
+            {
+                MySQLDB.DBExecuteNonQuery(cmd);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("從箱號 '" + boxsn + "' 移除產品 '" + sigknowsn + "' 失敗.");
+                MessageBox.Show(ex.ToString());
+                Utils.ErrorBeep();
+                throw;
+            }
+
+            try
+            {
+                var pcbasn = SNAssociate.GetPCBASN(sigknowsn);
+                Boxing.dbremovefromboxchangehistory(pcbasn, sigknowsn, boxsn, DBColPrefix.gStationG);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("移除成功, 但更新修改記錄時出錯.");
+                throw;
+            }
+
+        }
     }
 
     class MySQLDB
@@ -970,6 +1001,24 @@ namespace SigknowShopFloor
             }
         }
 
+        public static void dbremovefromboxchangehistory(string pcbasn, string sigknowsn, string boxsn, string station)
+        {
+            var cmd = "insert into " + Global.gUpdateHistoryTableName + " ( " +
+                      "PCBASN, SIGKNOWSN, STATION, CHANGETO, TIME, USERNAME " +
+                      ") values ( '" +
+                      pcbasn + "', '" + sigknowsn + "', '" + station + "' , 'remove from box " + boxsn + "' , '" +
+                      Utils.CurrentTime() + "' , '" + Global.gUsername + "' );";
+
+            try
+            {
+                MySQLDB.DBExecuteNonQuery(cmd);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("新增 '" + sigknowsn + "' 修正紀錄失敗");
+                throw;
+            }
+        }
     }
 
     class DatabaseToFile

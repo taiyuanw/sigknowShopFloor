@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Channels;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -123,7 +124,7 @@ namespace SigknowShopFloor
 
             lbBoxContent.Height = 50;
             lbBoxContent.Width = 300;
-            lbBoxContent.Content = "內容物: ";
+            lbBoxContent.Content = "箱內容物 (點擊移除) : ";
             spPatchMatrix.Orientation = Orientation.Horizontal;
             spPatchMatrix.HorizontalAlignment = HorizontalAlignment.Right;
             spCol0.Width = 150;
@@ -266,6 +267,7 @@ namespace SigknowShopFloor
                 x.Height = 30;
                 x.Width = 150;
                 x.Content = lstPATCHSN.ElementAt(i);
+                x.Click += new RoutedEventHandler(ButtonXClickHandler());
 
                 if (i < 10)
                     spCol0.Children.Add(x);
@@ -282,6 +284,28 @@ namespace SigknowShopFloor
             }
 
         }
+
+        private Action<object, RoutedEventArgs> ButtonXClickHandler()
+        {
+            return (object sender, RoutedEventArgs e) =>
+            {
+                // Put your code here, it will be called when
+                // the button is clicked
+                Button b = sender as Button;
+                //MessageBox.Show("content: " + b.Content + "\nboxsn: " + Global.gBOXSN);
+                try
+                {
+                    Boxing.RemovePatchFromBox(Global.gBOXSN, b.Content.ToString());
+                    ShowBoxContent();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.ToString());
+                    throw;
+                }
+            };
+        }
+
         private void tbBOXSN_KeyDown(object sender, KeyEventArgs e)
         {
             var textBox = sender as TextBox;
