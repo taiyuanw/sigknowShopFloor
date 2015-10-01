@@ -160,6 +160,7 @@ namespace SigknowShopFloor
 
             
             Content = spMainBody;
+            WindowState = WindowState.Maximized;
             tbBOXSN.Focus();
             tbBOXSN.SelectAll();
 
@@ -184,7 +185,7 @@ namespace SigknowShopFloor
                     return;
                 try
                 {
-                    tbBOXSN.Background = System.Windows.Media.Brushes.LightGray;
+                    tbSIGKNOWSN.Background = System.Windows.Media.Brushes.LightGray;
                     Global.gPCBASN = SNAssociate.GetPCBASN(Global.gSIGKNOWSN);
                     //Utils.ValidateSN(Global.gPCBASN, DBColPrefix.gStationB, DBColPrefix.gStationC, DBColPrefix.gStationD, DBColPrefix.gStationF);
                     Utils.ValidateSN(Global.gPCBASN, DBColPrefix.gStationB, DBColPrefix.gStationC, DBColPrefix.gStationF);
@@ -197,6 +198,7 @@ namespace SigknowShopFloor
                     tbBOXSN.Clear();
                     Utils.ErrorBeep();
                     MessageBox.Show("上蓋序號 '" + Global.gSIGKNOWSN + "' 格式不符合規定.");
+                    tbSIGKNOWSN.Background = System.Windows.Media.Brushes.Red;
                 }
                 catch (PreviousErrorException pe)
                 {
@@ -204,6 +206,7 @@ namespace SigknowShopFloor
                     tbBOXSN.Clear();
                     Utils.ErrorBeep();
                     MessageBox.Show("前一站測試未通過.");
+                    tbSIGKNOWSN.Background = System.Windows.Media.Brushes.Red;
                 }
                 catch (SerialNumberNotMatchedException snnm)
                 {
@@ -211,7 +214,7 @@ namespace SigknowShopFloor
                     tbBOXSN.Clear();
                     Utils.ErrorBeep();
                     MessageBox.Show("上蓋序號'" + Global.gSIGKNOWSN + "' 查無 PCBA 關聯.");
-
+                    tbSIGKNOWSN.Background = System.Windows.Media.Brushes.Red;
                 }
                 catch (Exception ex)
                 {
@@ -221,6 +224,7 @@ namespace SigknowShopFloor
                     MessageBox.Show(ex.ToString());
                     Utils.ErrorBeep();
                     tbSIGKNOWSN.Focus();
+                    tbSIGKNOWSN.Background = System.Windows.Media.Brushes.Red;
                 }
 
             }
@@ -275,7 +279,9 @@ namespace SigknowShopFloor
                     Utils.ValidateBoxSN(textBox.Text);
 
                     this.ShowBoxContent();
-
+                    tbSIGKNOWSN.Background = System.Windows.Media.Brushes.LightGreen;
+                    tbSIGKNOWSN.Clear();
+                    tbSIGKNOWSN.Focus();
                 }
                 catch (ResultUnchangedException rx)
                 {
