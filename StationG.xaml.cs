@@ -185,7 +185,27 @@ namespace SigknowShopFloor
                     tbBOXSN.Background = System.Windows.Media.Brushes.LightGray;
                     Global.gPCBASN = SNAssociate.GetPCBASN(Global.gSIGKNOWSN);
                     Utils.ValidateSN(Global.gPCBASN, DBColPrefix.gStationB, DBColPrefix.gStationC, DBColPrefix.gStationF);
-                    Boxing.dbupdate(Global.gPCBASN, Global.gBOXSN);
+                    Utils.ValidateResultBoxing(Global.gBOXSN, Global.gSIGKNOWSN);
+
+
+                    textBox.Background = System.Windows.Media.Brushes.LightGreen;
+                    textBox.Foreground = System.Windows.Media.Brushes.Black;
+                    if (Global.gREWORK)
+                    {
+                        if (!Global.gSKIP)
+                        {
+                            Boxing.dbupdate(Global.gPCBASN, Global.gBOXSN);
+                            if (!Global.gINITIALRUN)
+                                Utils.dbchangehistory(Global.gPCBASN, Global.gSIGKNOWSN, DBColPrefix.gStationG, Global.gBOXSN);
+                        }
+                    }
+                    else
+                    {
+                        //throw new Exception("未按照標準程序 : 查無前一站資料.");
+                        Utils.dbinsert(Global.gPCBASN, DBColPrefix.gStationG, Global.gBOXSN);
+                    }
+                    
+                    //Boxing.dbupdate(Global.gPCBASN, Global.gBOXSN);
                     this.ShowBoxContent();
                     Utils.OKBeep();
                     tbSIGKNOWSN.Clear();

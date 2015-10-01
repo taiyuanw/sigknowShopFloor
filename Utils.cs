@@ -168,10 +168,10 @@ namespace SigknowShopFloor
         }
         public static void ValidateResult(string station, string pcbasn, string result)
         {
-            var cmd = " select " + station + DBColPostfix.gColname +
+            var cmd = " select " + station + DBColPostfix.gColname + " ,ARESULT " +
                 " from " + Global.gTableName +
                 " where PCBASN = '" + pcbasn + "'" +
-                " and boxsn is NULL order by id desc limit 1;";
+                " and (" + Global.gBOXTIMEINTERVAL  + " || BOXSN is NULL) order by id desc limit 1;";
             MySQLDB.DBconnect();
             MySqlCommand sqlcmd = MySQLDB.command(cmd);
             MySqlDataReader reader = sqlcmd.ExecuteReader();
@@ -179,6 +179,20 @@ namespace SigknowShopFloor
             {
                 while (reader.Read())
                 {
+
+                    if (station == DBColPrefix.gStationA)
+                    {
+                        Global.gREWORK = true;
+                    }
+
+                    if (station == DBColPrefix.gStationB)
+                    {
+                        if (!reader.IsDBNull(0) || !reader.IsDBNull(1))
+                        {
+                            Global.gREWORK = true;
+                        }
+                    }
+                    
                     if (!reader.IsDBNull(0))
                     {
                         var val = reader.GetString(0);
@@ -199,7 +213,8 @@ namespace SigknowShopFloor
                     else
                     {
                         Global.gSKIP = false;
-                        Global.gINITIALRUN = true;
+                        if ((station != DBColPrefix.gStationA) && (station != DBColPrefix.gStationB))
+                            Global.gINITIALRUN = true;
                     }
                 }
             }
@@ -207,6 +222,7 @@ namespace SigknowShopFloor
             {
                 Global.gSKIP = false;
                 Global.gINITIALRUN = true;
+                Global.gREWORK = false;
             }
             else
             {
@@ -224,6 +240,40 @@ namespace SigknowShopFloor
             {
                 throw new InvalidSerialNumberException();
             }
+        }
+
+        public static void ValidateResultBoxing(string boxsn, string sn)
+        {
+            var cmd = " select BOXSN, BOXTIME, BOXUSERNAME " +
+                " from " + Global.gTableName +
+                " where SIGKNOWSN = '" + sn + "'" +
+                " and " + Global.gBOXTIMEINTERVAL + " order by id desc limit 1;";
+            MySQLDB.DBconnect();
+            MySqlCommand sqlcmd = MySQLDB.command(cmd);
+            MySqlDataReader reader = sqlcmd.ExecuteReader();
+            if ((reader.HasRows))
+            {
+                while (reader.Read())
+                {
+                    var val = reader.GetString(0);
+                    if (val.Length > 0)
+                    {
+                        Global.gSKIP = (reader.GetString(0) == boxsn);
+                        Global.gINITIALRUN = false;
+                    }
+                    else
+                    {
+                        Global.gSKIP = false;
+                        Global.gINITIALRUN = true;
+                    }
+                }
+            }
+            else
+            {
+                Global.gINITIALRUN = true;
+                Global.gSKIP = false;
+            }
+            MySQLDB.DBdisconnect();
         }
 
 

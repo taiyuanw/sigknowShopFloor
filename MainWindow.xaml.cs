@@ -106,7 +106,9 @@ namespace SigknowShopFloor
             
             spMainBody.Children.Add(lbReport);
             spMainBody.Children.Add(buttonReport);
-            
+
+            txtboxServer.Clear();
+            txtboxServer.Focus();
 
             Content = spMainBody;
 
