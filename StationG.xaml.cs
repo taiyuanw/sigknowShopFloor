@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Channels;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -123,7 +124,7 @@ namespace SigknowShopFloor
 
             lbBoxContent.Height = 50;
             lbBoxContent.Width = 300;
-            lbBoxContent.Content = "內容物: ";
+            lbBoxContent.Content = "箱內容物 (點擊移除) : ";
             spPatchMatrix.Orientation = Orientation.Horizontal;
             spPatchMatrix.HorizontalAlignment = HorizontalAlignment.Right;
             spCol0.Width = 150;
@@ -157,8 +158,6 @@ namespace SigknowShopFloor
             spMainBody.Children.Add(spPatchMatrix);
             Utils.changeTextboxLang2Eng(tbSIGKNOWSN);
 
-
-            
             Content = spMainBody;
             WindowState = WindowState.Maximized;
             tbBOXSN.Focus();
@@ -187,42 +186,63 @@ namespace SigknowShopFloor
                 {
                     tbSIGKNOWSN.Background = System.Windows.Media.Brushes.LightGray;
                     Global.gPCBASN = SNAssociate.GetPCBASN(Global.gSIGKNOWSN);
-                    //Utils.ValidateSN(Global.gPCBASN, DBColPrefix.gStationB, DBColPrefix.gStationC, DBColPrefix.gStationD, DBColPrefix.gStationF);
                     Utils.ValidateSN(Global.gPCBASN, DBColPrefix.gStationB, DBColPrefix.gStationC, DBColPrefix.gStationF);
-                    tbBOXSN.Focus();
-                    tbBOXSN.Clear();
+                    Utils.ValidateResultBoxing(Global.gBOXSN, Global.gSIGKNOWSN);
+
+
+                    textBox.Background = System.Windows.Media.Brushes.LightGreen;
+                    textBox.Foreground = System.Windows.Media.Brushes.Black;
+                    if (Global.gREWORK)
+                    {
+                        if (!Global.gSKIP)
+                        {
+                            Boxing.dbupdate(Global.gPCBASN, Global.gBOXSN);
+                            if (!Global.gINITIALRUN)
+                                Utils.dbchangehistory(Global.gPCBASN, Global.gSIGKNOWSN, DBColPrefix.gStationG, Global.gBOXSN);
+                        }
+                    }
+                    else
+                    {
+                        //throw new Exception("未按照標準程序 : 查無前一站資料.");
+                        Utils.dbinsert(Global.gPCBASN, DBColPrefix.gStationG, Global.gBOXSN);
+                    }
+                    
+                    //Boxing.dbupdate(Global.gPCBASN, Global.gBOXSN);
+                    this.ShowBoxContent();
+                    Utils.OKBeep();
+                    tbSIGKNOWSN.Clear();
+                    tbSIGKNOWSN.Focus();
                 }
                 catch (InvalidSerialNumberException isne)
                 {
-                    tbSIGKNOWSN.Clear();
-                    tbBOXSN.Clear();
                     Utils.ErrorBeep();
-                    MessageBox.Show("上蓋序號 '" + Global.gSIGKNOWSN + "' 格式不符合規定.");
+                    MessageBox.Show("序號 '" + Global.gSIGKNOWSN + "' 格式不符合規定.");
+                    tbSIGKNOWSN.Clear();
+                    tbSIGKNOWSN.Focus();
                     tbSIGKNOWSN.Background = System.Windows.Media.Brushes.Red;
                 }
                 catch (PreviousErrorException pe)
                 {
-                    tbSIGKNOWSN.Clear();
-                    tbBOXSN.Clear();
                     Utils.ErrorBeep();
-                    MessageBox.Show("前一站測試未通過.");
+                    MessageBox.Show("序號 '"+ tbSIGKNOWSN.Text + "' 前一站測試未通過.");
+                    tbSIGKNOWSN.Clear();
+                    tbSIGKNOWSN.Focus();
                     tbSIGKNOWSN.Background = System.Windows.Media.Brushes.Red;
                 }
                 catch (SerialNumberNotMatchedException snnm)
                 {
-                    tbSIGKNOWSN.Clear();
-                    tbBOXSN.Clear();
                     Utils.ErrorBeep();
                     MessageBox.Show("上蓋序號'" + Global.gSIGKNOWSN + "' 查無 PCBA 關聯.");
+                    tbSIGKNOWSN.Clear();
+                    tbSIGKNOWSN.Focus();
                     tbSIGKNOWSN.Background = System.Windows.Media.Brushes.Red;
                 }
                 catch (Exception ex)
                 {
-                    tbSIGKNOWSN.Clear();
-                    tbBOXSN.Clear();
-                    MessageBox.Show("SIGKNOWSN 輸入發生錯誤");
-                    MessageBox.Show(ex.ToString());
                     Utils.ErrorBeep();
+                    MessageBox.Show("SIGKNOWSN 輸入時發生錯誤");
+                    MessageBox.Show(ex.ToString());
+                    tbSIGKNOWSN.Clear();
                     tbSIGKNOWSN.Focus();
                     tbSIGKNOWSN.Background = System.Windows.Media.Brushes.Red;
                 }
@@ -233,6 +253,7 @@ namespace SigknowShopFloor
 
         private void ShowBoxContent()
         {
+            //spPatchMatrix.Children.Clear(); 
             lstPATCHSN = Utils.GetPatchSNbyBoxSN(tbBOXSN.Text);
             spCol0.Children.Clear();
             spCol1.Children.Clear();
@@ -251,6 +272,7 @@ namespace SigknowShopFloor
                 x.Height = 30;
                 x.Width = 150;
                 x.Content = lstPATCHSN.ElementAt(i);
+                x.Click += new RoutedEventHandler(ButtonXClickHandler());
 
                 if (i < 10)
                     spCol0.Children.Add(x);
@@ -265,7 +287,30 @@ namespace SigknowShopFloor
                 else if (i >= 50)
                     spCol5.Children.Add(x);
             }
+
         }
+
+        private Action<object, RoutedEventArgs> ButtonXClickHandler()
+        {
+            return (object sender, RoutedEventArgs e) =>
+            {
+                // Put your code here, it will be called when
+                // the button is clicked
+                Button b = sender as Button;
+                //MessageBox.Show("content: " + b.Content + "\nboxsn: " + Global.gBOXSN);
+                try
+                {
+                    Boxing.RemovePatchFromBox(Global.gBOXSN, b.Content.ToString());
+                    ShowBoxContent();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.ToString());
+                    throw;
+                }
+            };
+        }
+
         private void tbBOXSN_KeyDown(object sender, KeyEventArgs e)
         {
             var textBox = sender as TextBox;
@@ -277,11 +322,11 @@ namespace SigknowShopFloor
                 try
                 { 
                     Utils.ValidateBoxSN(textBox.Text);
-
+                    Global.gBOXSN = textBox.Text;
                     this.ShowBoxContent();
-                    tbSIGKNOWSN.Background = System.Windows.Media.Brushes.LightGreen;
                     tbSIGKNOWSN.Clear();
                     tbSIGKNOWSN.Focus();
+                    tbSIGKNOWSN.Background = System.Windows.Media.Brushes.LightGreen;
                 }
                 catch (ResultUnchangedException rx)
                 {

@@ -195,7 +195,8 @@ namespace SigknowShopFloor
                         }
                         else
                         {
-                            Utils.dbinsert(tbPCBASN.Text, DBColPrefix.gStationA, Utils.barcode2dbbool(Global.gResult));
+                            if (Global.gINITIALRUN)
+                                Utils.dbinsert(tbPCBASN.Text, DBColPrefix.gStationA, Utils.barcode2dbbool(Global.gResult));
                         }
                         tbPCBASN.Focus();
                         tbPCBASN.SelectAll();
@@ -216,7 +217,8 @@ namespace SigknowShopFloor
                         }
                         else
                         {
-                            Utils.dbinsert(tbPCBASN.Text, DBColPrefix.gStationA, Utils.barcode2dbbool(Global.gResult));
+                            if (Global.gINITIALRUN)
+                                Utils.dbinsert(tbPCBASN.Text, DBColPrefix.gStationA, Utils.barcode2dbbool(Global.gResult));
                         }
                         tbPCBASN.Focus();
                         tbPCBASN.SelectAll();
